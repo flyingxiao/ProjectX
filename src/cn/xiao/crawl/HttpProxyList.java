@@ -103,7 +103,8 @@ public class HttpProxyList {
 			for (int i = startPage; i <= totalPage; i++) {
 				Document doc = null;
 				//timeout, retry 5 times
-				for (int retry = 1; retry <= 5; retry++) {
+				int retry = 1;
+				for (; retry <= 5; retry++) {
 					try {
 						doc = Jsoup.connect(proxyURL + i).get();
 					} catch (SocketTimeoutException e) {
@@ -111,6 +112,10 @@ public class HttpProxyList {
 						continue;
 					}
 					break;
+				}
+				if (doc == null) {
+					System.out.println("连续重试超过5次，未成功！跳过此页：" + i + "： " + proxyURL);
+					continue;
 				}
 				
 				//get the total page num in the first page
