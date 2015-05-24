@@ -20,13 +20,15 @@ public class HttpProxyAvailable {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		
         try {
-        	HttpHost target = new HttpHost("www.baidu.com", 443, "https");
-            HttpHost proxy = new HttpHost("117.162.116.4", 8123);
+        	HttpHost target = new HttpHost("www.kuaidaili.com");
+//            HttpHost proxy = new HttpHost("106.3.40.67", 8080);
+//            HttpHost proxy = new HttpHost("106.38.251.62", 8088);
+            HttpHost proxy = new HttpHost("122.225.106.40", 80);
 
             RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
         	
             // ´´½¨httpget.
-            HttpGet httpget = new HttpGet("www.baidu.com");
+            HttpGet httpget = new HttpGet("/free/inha/3");
             httpget.setConfig(config);
             
             System.out.println("executing request to " + target + " via " + proxy);
