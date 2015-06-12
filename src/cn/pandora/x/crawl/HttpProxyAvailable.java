@@ -30,6 +30,7 @@ public class HttpProxyAvailable {
             // ´´½¨httpget.
             HttpGet httpget = new HttpGet("/free/inha/3");
             httpget.setConfig(config);
+//            httpget.setHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; QQDownload 1.7; .NET CLR 1.1.4322; CIBA; .NET CLR 2.0.50727)");
             
             System.out.println("executing request to " + target + " via " + proxy);
             
