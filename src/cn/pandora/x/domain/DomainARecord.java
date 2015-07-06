@@ -151,13 +151,14 @@ public class DomainARecord implements Callable<String> {
 
 	@Override
 	public String call() {
-		String[] serverName = {"8.8.8.8", "101.226.4.6", "114.114.114.114", "223.6.6.6", "223.5.5.5", "180.76.76.76", "123.125.81.6"};
+		String[] serverName = {"8.8.8.8", "101.226.4.6", "114.114.114.114", "223.6.6.6", "223.5.5.5", "180.76.76.76", "123.125.81.6", "1.2.4.8"};
 		
 		StringBuilder result = new StringBuilder();
 		int a_cnt = 0;
         int aaaa_cnt = 0;
         int mx_cnt = 0;
         int ns_cnt = 0;
+        int cname_cnt = 0;
         
         Record[] r = null;
         Message reponse = null;
@@ -167,7 +168,7 @@ public class DomainARecord implements Callable<String> {
 	        Record rec = null;
 	        Message query = null;
        
-			sr = new SimpleResolver(serverName[(int)(Math.random() * 10 ) % 7]);
+			sr = new SimpleResolver(serverName[(int)(Math.random() * 10 ) % serverName.length]);
 		
 	        rec = Record.newRecord(domain, Type.ANY, DClass.IN);
 	        query = Message.newQuery(rec);
@@ -196,10 +197,14 @@ public class DomainARecord implements Callable<String> {
 	        		ns_cnt++;
 	        		continue;
 	        	}
+	        	if (re.getType() == Type.CNAME) {
+	        		cname_cnt++;
+	        		continue;
+	        	}
 	        }
         }
         int rcode = reponse == null ? -1 : reponse.getRcode();
-        result.append(domainName).append(",").append(rcode).append(",").append(a_cnt).append(",").append(aaaa_cnt).append(",").append(mx_cnt).append(",").append(ns_cnt).append("\n");
+        result.append(domainName).append(",").append(rcode).append(",").append(a_cnt).append(",").append(aaaa_cnt).append(",").append(mx_cnt).append(",").append(ns_cnt).append(",").append(cname_cnt).append("\n");
 
 		return result.toString();
 	}
@@ -220,25 +225,26 @@ public class DomainARecord implements Callable<String> {
 		try {
 			rf.seek(position);
 			for (int i = 0; i < number; i++) {
-//				String target = new String(rf.readLine().getBytes("ISO-8859-1"),"GBK");
 				String target = rf.readLine();
 				if (target != null && !"".equals(target.trim())) {
-					targets.add(target);
-//					try {
-//						targets.add(LanguageUtil.chinese2Punycode(target));
-//					} catch (PunyException e) {
-//					}
+//					targets.add(target);
+					target = new String(target.getBytes("ISO-8859-1"),"GBK");
+					try {
+						targets.add(LanguageUtil.chinese2Punycode(target));
+					} catch (PunyException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		} catch (IOException e) {
-			throw e;
+			e.printStackTrace();
 		} finally {
 			try {
 				position = rf.getFilePointer();
 				// 将文件的当前偏移量保存到本地文件
 				recordOffset(position);
 			} catch (IOException e) {
-				throw e;
+				e.printStackTrace();
 			}
 		}
 		return targets;

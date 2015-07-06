@@ -39,7 +39,7 @@ public class WhoisResultAnalysis implements Callable<String> {
 	private static BufferedWriter bufferedWriter_whois_fail;
 	private static String offsetFilePath;
 
-	private static final Log log = LogFactory.getLog(DomainQuery.class);
+	private static final Log log = LogFactory.getLog(WhoisResultAnalysis.class);
 
 	public WhoisResultAnalysis(String domainName) {
 		this.domainName = domainName;
