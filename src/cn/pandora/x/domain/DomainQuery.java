@@ -28,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.xbill.DNS.Name;
+import org.xbill.DNS.TextParseException;
 
 public class DomainQuery implements Callable<String> {
 
@@ -63,8 +65,8 @@ public class DomainQuery implements Callable<String> {
 			}
 		}
 		
-		int corePoolSize = 1;
-		int maximumPoolSize = 1;
+		int corePoolSize = 10;
+		int maximumPoolSize = 10;
 		long keepAliveTime = 3000;
 		
 		BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(
@@ -122,11 +124,14 @@ public class DomainQuery implements Callable<String> {
 	public static void execute(List<String> domainList) {
 		List<Future<String>> result = new ArrayList<Future<String>>();
 		for (String d : domainList) {
+			if (d.endsWith(".")) {
+				d = d.substring(0, d.length() - 1);
+			}
 			DomainQuery task = new DomainQuery(d);
 			Future<String> callable = (Future<String>) threadPool.submit(task);
 			result.add(callable);
 			try {
-				Thread.sleep(100);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -171,7 +176,7 @@ public class DomainQuery implements Callable<String> {
 
 	@Override
 	public String call() {
-		String serverName = "whois.afilias.info";
+		String serverName = getServer(domainName);
 		String whoisContent = null;
 		try {
 			int retry = 1;
@@ -196,7 +201,7 @@ public class DomainQuery implements Callable<String> {
 				e1.printStackTrace();
 			}
 		}
-		return whoisContent;
+		return "Punycode: " + domainName + "\n" + whoisContent;
 	}
 
 	private String queryWhoisServer(String domainName, String serverName,
@@ -246,9 +251,16 @@ public class DomainQuery implements Callable<String> {
 	}
 
 	private String getTLD(String domain) {
-		final int index;
-		return (domain == null || (index = domain.lastIndexOf('.') + 1) < 1) ? domain
-				: (index < (domain.length())) ? domain.substring(index) : "";
+		Name n = null;
+		try {
+			n = Name.fromString(domain);
+		} catch (TextParseException e) {
+			e.printStackTrace();
+		}
+		if (n == null) {
+			return "";
+		}
+	    return n.getLabelString(n.labels() - 1);
 	}
 
 	private String getServer(String domain) {
@@ -269,6 +281,14 @@ public class DomainQuery implements Callable<String> {
 			server = "whois.kr";
 		} else if ("info".equals(tld)) {
 			server = "whois.afilias.info";
+		} else if ("xn--czr694b".equals(tld) || //商标
+				   "xn--czru2d".equals(tld)  || //商城
+				   "xn--kput3i".equals(tld)  || //手机
+				   "xn--6qq986b3xl".equals(tld) || //我爱你
+				   "xn--6frz82g".equals(tld) || //移动
+				   "xn--3ds443g".equals(tld) || //在线
+				   "xn--fiq228c5hs".equals(tld)) {//中文网
+			server = "whois.nic." + tld;
 		}
 
 		return server;

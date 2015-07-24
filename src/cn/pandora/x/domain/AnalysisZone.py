@@ -203,7 +203,8 @@ for zone_file_name in zone_file_list:
       elif dot_count > 1:
         sld_and_sub_num += 1
 
-      dn = "www." + d
+      dn = d
+      #dn = "www." + d
       fout_d.write("%s\n"%dn)
       fout_d_and_ns.write("%s\t%s\n"%(d, "\t".join(domain_2_ns[d])))
 
